@@ -1,34 +1,9 @@
 const path = require("path");
-const axios = require("axios");
 const chalk = require("chalk");
-
-import withSitemapIndex from "./withSitemapIndex";
 import generateSitemap from "./sitemap/generateSitemap";
-import { exportFile } from "./utils/export-file";
 import { toChunks, resolveSitemapChunks } from "./utils/chunkjs";
 import loadFile from "./utils/loadFile";
 import getConfigPath from "./paths/getConfigPath";
-
-const fetchVendors = async (params) => {
-  return await axios.get(`https://stg.api.exampirate.com/v1/vendor/list`, {
-    params: {
-      limit: 2,
-      ...params,
-    },
-  });
-};
-
-const fetchQuestions = async (params) => {
-  return await axios.get(
-    `https://stg.api.exampirate.com/v1/question/list-slug`,
-    {
-      params: {
-        limit: 5000,
-        ...params,
-      },
-    }
-  );
-};
 
 const initialParams = {
   /** Total count of data */
@@ -46,7 +21,7 @@ const asyncSiteMapGenerate = (fetcher) => async (params) => {
     ...initialParams,
     ...params,
   };
-  const { total, current, page, prefix, xmlFields } = computedParams;
+  const { total, current, page, prefix, xmlFields, url } = computedParams;
   const { data } = await fetcher({ page });
 
   if (current < total || current === 0) {
@@ -54,10 +29,17 @@ const asyncSiteMapGenerate = (fetcher) => async (params) => {
     const currentRowsCount = data.rows.length;
     const { siteUrl } = loadFile(getConfigPath());
 
-    const fields = data.rows.map((x) => ({
-      loc: path.join(siteUrl, x.slug), // Absolute url
-      lastmod: new Date().toISOString(),
-    }));
+    const fields = data.rows.map((x) => {
+      // new
+      if (!x.updated_at) {
+        console.log(chalk.red.bold(`📣 ${url} is missing updated_at key`));
+        throw new Error("Missing key updated_at");
+      }
+      return {
+        loc: path.join(siteUrl, x.slug), // Absolute url
+        lastmod: x.updated_at,
+      };
+    });
 
     return await asyncSiteMapGenerate(fetcher)({
       ...computedParams,
@@ -81,38 +63,3 @@ const asyncSiteMapGenerate = (fetcher) => async (params) => {
   return sitemapChunks;
 };
 export default asyncSiteMapGenerate;
-
-const buildIndexSitemapXml = (sitemaps) => {
-  const { siteUrl } = loadFile(getConfigPath());
-  return sitemaps
-    .map((sitemap) =>
-      `
-    <sitemap>
-      <loc>${path.join(siteUrl, sitemap.filename)}</loc>
-    </sitemap>
-  `.trim()
-    )
-    .join("");
-};
-
-const execute = async () => {
-  console.log(chalk.yellow("Sitemap generation initiated..."));
-
-  const vendorChunks = await asyncSiteMapGenerate(fetchVendors)({
-    prefix: "vendors",
-  });
-  console.log(chalk.green("vendors generated"));
-  console.log(chalk.yellow("Questions sitemap initiated..."));
-
-  const questionChunks = await asyncSiteMapGenerate(fetchQuestions)({
-    prefix: "questions",
-  });
-
-  console.log(chalk.green("Questions sitemap generated"));
-
-  exportFile(
-    path.join(process.cwd(), "public", "sitemap_index.xml"),
-    withSitemapIndex(buildIndexSitemapXml([...vendorChunks, ...questionChunks]))
-  );
-  console.log(chalk.bgGreen.bold("Done"));
-};

@@ -6,6 +6,7 @@ import getConfigPath from "./sitemap/paths/getConfigPath";
 import loadFile from "./sitemap/utils/loadFile";
 import { exportFile } from "./sitemap/utils/export-file";
 import withSitemapIndex from "./sitemap/withSitemapIndex";
+import generateNonDynamicPages from "./sitemap/sitemap/generateNonDynamicPages";
 
 const buildIndexSitemapXml = (sitemaps) => {
   const { siteUrl } = loadFile(getConfigPath());
@@ -21,7 +22,12 @@ const buildIndexSitemapXml = (sitemaps) => {
 };
 
 export async function cli() {
-  const { apiUrl, siteMaps } = loadFile(getConfigPath());
+  const {
+    siteUrl,
+    apiUrl,
+    nonDynamicPages = [],
+    siteMaps,
+  } = loadFile(getConfigPath());
   console.log(chalk.yellow("Sitemap generation initiated..."));
   let chunks = [];
 
@@ -39,17 +45,25 @@ export async function cli() {
 
     const computedChunk = await asyncSiteMapGenerate(fetcher)({
       prefix: fetchObj.name,
+      url: apiUrl + fetchObj.url,
     });
-    chunks = [...chunks, ...computedChunk];
 
     console.log(chalk.green(`-${fetchObj.name} sitemap generated`));
 
     if (index + 1 === siteMaps.length) {
-      console.log(chalk.bgGreen("DONE"));
+      const staticPagesChunk = generateNonDynamicPages(
+        siteUrl,
+        nonDynamicPages
+      );
+      console.log(chalk.green("-Static pages sitemap generated"));
+      chunks = [...staticPagesChunk, ...chunks, ...computedChunk];
+
       exportFile(
         path.join(process.cwd(), "public", "sitemap_index.xml"),
         withSitemapIndex(buildIndexSitemapXml(chunks))
       );
+
+      console.log(chalk.bgGreen("DONE"));
     }
   });
 }
