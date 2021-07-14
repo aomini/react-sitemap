@@ -31,40 +31,36 @@ export async function cli() {
   console.log(chalk.yellow("Sitemap generation initiated..."));
   let chunks = [];
 
-  siteMaps.forEach(async (fetchObj, index) => {
-    const fetcher = async (params) => {
-      return await axios.get(apiUrl + fetchObj.url, {
-        params: {
-          limit: 3000,
-          ...params,
-        },
+  await Promise.all(
+    siteMaps.map(async (fetchObj, index) => {
+      const fetcher = async (params) => {
+        return await axios.get(apiUrl + fetchObj.url, {
+          params: {
+            limit: 3000,
+            ...params,
+          },
+        });
+      };
+
+      console.log(chalk.blue(`-${fetchObj.name} sitemap generation initiated`));
+
+      const computedChunk = await asyncSiteMapGenerate(fetcher)({
+        prefix: fetchObj.name,
+        pathname: fetchObj.path,
+        url: path.join(apiUrl, fetchObj.url),
       });
-    };
+      chunks = [...chunks, ...computedChunk];
+      console.log(chalk.green(`-${fetchObj.name} sitemap generated`));
+    })
+  );
+  const staticPagesChunk = generateNonDynamicPages(siteUrl, nonDynamicPages);
+  console.log(chalk.green("-Static pages sitemap generated"));
+  chunks = [...staticPagesChunk, ...chunks];
 
-    console.log(chalk.blue(`-${fetchObj.name} sitemap generation initiated`));
+  exportFile(
+    path.join(process.cwd(), "public", "sitemap_index.xml"),
+    withSitemapIndex(buildIndexSitemapXml(chunks))
+  );
 
-    const computedChunk = await asyncSiteMapGenerate(fetcher)({
-      prefix: fetchObj.name,
-      pathname: fetchObj.path,
-      url: path.join(apiUrl, fetchObj.url),
-    });
-    chunks = [...chunks, ...computedChunk];
-    console.log(chalk.green(`-${fetchObj.name} sitemap generated`));
-
-    if (index + 1 === siteMaps.length) {
-      const staticPagesChunk = generateNonDynamicPages(
-        siteUrl,
-        nonDynamicPages
-      );
-      console.log(chalk.green("-Static pages sitemap generated"));
-      chunks = [...staticPagesChunk, ...chunks];
-
-      exportFile(
-        path.join(process.cwd(), "public", "sitemap_index.xml"),
-        withSitemapIndex(buildIndexSitemapXml(chunks))
-      );
-
-      console.log(chalk.bgGreen("DONE"));
-    }
-  });
+  console.log(chalk.bgGreen("DONE"));
 }
