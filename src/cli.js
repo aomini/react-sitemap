@@ -48,7 +48,7 @@ export async function cli() {
       pathname: fetchObj.path,
       url: path.join(apiUrl, fetchObj.url),
     });
-
+    chunks = [...chunks, ...computedChunk];
     console.log(chalk.green(`-${fetchObj.name} sitemap generated`));
 
     if (index + 1 === siteMaps.length) {
@@ -57,7 +57,7 @@ export async function cli() {
         nonDynamicPages
       );
       console.log(chalk.green("-Static pages sitemap generated"));
-      chunks = [...staticPagesChunk, ...chunks, ...computedChunk];
+      chunks = [...staticPagesChunk, ...chunks];
 
       exportFile(
         path.join(process.cwd(), "public", "sitemap_index.xml"),
