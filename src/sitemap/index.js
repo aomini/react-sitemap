@@ -21,7 +21,8 @@ const asyncSiteMapGenerate = (fetcher) => async (params) => {
     ...initialParams,
     ...params,
   };
-  const { total, current, page, prefix, xmlFields, url } = computedParams;
+  const { total, current, page, prefix, xmlFields, pathname, url } =
+    computedParams;
   const { data } = await fetcher({ page });
 
   if (current < total || current === 0) {
@@ -30,13 +31,15 @@ const asyncSiteMapGenerate = (fetcher) => async (params) => {
     const { siteUrl } = loadFile(getConfigPath());
 
     const fields = data.rows.map((x) => {
-      // new
       if (!x.updated_at) {
         console.log(chalk.red.bold(`📣 ${url} is missing updated_at key`));
         throw new Error("Missing key updated_at");
       }
       return {
-        loc: path.join(siteUrl, x.slug), // Absolute url
+        loc: path.join(
+          siteUrl,
+          pathname ? pathname.replace("[slug]", x.slug) : x.slug
+        ), // Absolute url
         lastmod: x.updated_at,
       };
     });

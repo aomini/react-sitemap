@@ -45,7 +45,8 @@ export async function cli() {
 
     const computedChunk = await asyncSiteMapGenerate(fetcher)({
       prefix: fetchObj.name,
-      url: apiUrl + fetchObj.url,
+      pathname: fetchObj.path,
+      url: path.join(apiUrl, fetchObj.url),
     });
 
     console.log(chalk.green(`-${fetchObj.name} sitemap generated`));
