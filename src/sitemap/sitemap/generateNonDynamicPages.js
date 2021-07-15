@@ -1,5 +1,6 @@
 import path from "path";
 import { resolveSitemapChunks } from "../utils/chunkjs";
+import createUrl from "../utils/createUrl";
 import generateSitemap from "./generateSitemap";
 
 const generateNonDynamicPages = (siteUrl, nonDynamicPages = []) => {
@@ -7,7 +8,7 @@ const generateNonDynamicPages = (siteUrl, nonDynamicPages = []) => {
 
   const prefix = "static-pages";
   const chunks = nonDynamicPages.map((page) => ({
-    loc: path.join(siteUrl, page),
+    loc: createUrl(siteUrl, page),
     lastmod: new Date().toISOString(),
   }));
 

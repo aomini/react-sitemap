@@ -4,6 +4,7 @@ import generateSitemap from "./sitemap/generateSitemap";
 import { toChunks, resolveSitemapChunks } from "./utils/chunkjs";
 import loadFile from "./utils/loadFile";
 import getConfigPath from "./paths/getConfigPath";
+import createUrl from "./utils/createUrl";
 
 const initialParams = {
   /** Total count of data */
@@ -36,7 +37,7 @@ const asyncSiteMapGenerate = (fetcher) => async (params) => {
         throw new Error("Missing key updated_at");
       }
       return {
-        loc: path.join(
+        loc: createUrl(
           siteUrl,
           pathname ? pathname.replace("[slug]", x.slug) : x.slug
         ), // Absolute url

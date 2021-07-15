@@ -7,18 +7,22 @@ import loadFile from "./sitemap/utils/loadFile";
 import { exportFile } from "./sitemap/utils/export-file";
 import withSitemapIndex from "./sitemap/withSitemapIndex";
 import generateNonDynamicPages from "./sitemap/sitemap/generateNonDynamicPages";
+import createUrl from "./sitemap/utils/createUrl";
 
 const buildIndexSitemapXml = (sitemaps) => {
   const { siteUrl } = loadFile(getConfigPath());
-  return sitemaps
-    .map((sitemap) =>
-      `
+  return (
+    '<?xml version="1.0" encoding="UTF-8"?>\n' +
+    sitemaps
+      .map((sitemap) =>
+        `
     <sitemap>
-      <loc>${path.join(siteUrl, sitemap.filename)}</loc>
+      <loc>${createUrl(siteUrl, sitemap.filename)}</loc>
     </sitemap>
   `.trim()
-    )
-    .join("");
+      )
+      .join("")
+  );
 };
 
 export async function cli() {
@@ -33,8 +37,10 @@ export async function cli() {
 
   await Promise.all(
     siteMaps.map(async (fetchObj, index) => {
+      const compositeUrl = createUrl(apiUrl, fetchObj.url);
+
       const fetcher = async (params) => {
-        return await axios.get(apiUrl + fetchObj.url, {
+        return await axios.get(compositeUrl, {
           params: {
             limit: 3000,
             ...params,
@@ -47,7 +53,7 @@ export async function cli() {
       const computedChunk = await asyncSiteMapGenerate(fetcher)({
         prefix: fetchObj.name,
         pathname: fetchObj.path,
-        url: path.join(apiUrl, fetchObj.url),
+        url: compositeUrl,
       });
       chunks = [...chunks, ...computedChunk];
       console.log(chalk.green(`-${fetchObj.name} sitemap generated`));
