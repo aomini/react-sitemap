@@ -11,18 +11,15 @@ import createUrl from "./sitemap/utils/createUrl";
 
 const buildIndexSitemapXml = (sitemaps) => {
   const { siteUrl } = loadFile(getConfigPath());
-  return (
-    '<?xml version="1.0" encoding="UTF-8"?>\n' +
-    sitemaps
-      .map((sitemap) =>
-        `
+  return sitemaps
+    .map((sitemap) =>
+      `
     <sitemap>
       <loc>${createUrl(siteUrl, sitemap.filename)}</loc>
     </sitemap>
   `.trim()
-      )
-      .join("")
-  );
+    )
+    .join("");
 };
 
 export async function cli() {
