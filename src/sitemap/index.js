@@ -55,7 +55,7 @@ const asyncSiteMapGenerate = (fetcher) => async (params) => {
   }
 
   /** Generate xml files with the computed xmlFields */
-  const chunks = toChunks(xmlFields, 3000);
+  const chunks = toChunks(xmlFields, 1000);
 
   const exportPath = path.resolve(process.cwd(), "public", prefix || "sitemap");
 

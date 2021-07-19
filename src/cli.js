@@ -39,7 +39,7 @@ export async function cli() {
       const fetcher = async (params) => {
         return await axios.get(compositeUrl, {
           params: {
-            limit: 3000,
+            limit: 1000,
             ...params,
           },
         });
