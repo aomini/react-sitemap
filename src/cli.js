@@ -26,11 +26,21 @@ export async function cli() {
   const {
     siteUrl,
     apiUrl,
+    robots,
     nonDynamicPages = [],
     siteMaps,
   } = loadFile(getConfigPath());
   console.log(chalk.yellow("Sitemap generation initiated..."));
   let chunks = [];
+
+  if (robots) {
+    exportFile(
+      path.join(process.cwd(), "public", "robots.txt"),
+      `
+      User-agent: * \n\nAllow: /\nSitemap: ${siteUrl}/sitemap_index.xml
+      `.trim()
+    );
+  }
 
   await Promise.all(
     siteMaps.map(async (fetchObj, index) => {
