@@ -23,7 +23,7 @@ module.exports = {
     //   name: "questions",
     // },
   ],
-  
+
   /** optional stylesheet using XSLT*/
   sitemapStylesheet: "xml/sitemap.xsl",
   urlsetStylesheet: "xml/urlset.xsl",
