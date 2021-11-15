@@ -31,9 +31,9 @@ module.exports = {
 ```
 
 ## Styling your sitemap and urlset XML files:
-  # for styling the sitemap which is generated on the public folder of our React app, the react-sitemap.config.js file has a 
-  # optional parameter to define the XSLT styling format for the XML files, these files can have features like conditions, html-display, etc
-  # for showing the sitemap on a descriptive format.
+  ## for styling the sitemap which is generated on the public folder of our React app, the react-sitemap.config.js file has a 
+  ## optional parameter to define the XSLT styling format for the XML files, these files can have features like conditions, html-display, etc
+  ## for showing the sitemap on a descriptive format.
 
 ### An example for the styling sitemap is given as :
 ```
