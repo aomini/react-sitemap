@@ -16,6 +16,7 @@ const buildIndexSitemapXml = (sitemaps) => {
       `
     <sitemap>
       <loc>${createUrl(siteUrl, sitemap.filename)}</loc>
+      <lastmod>${new Date().toISOString()}</lastmod>
     </sitemap>
   `.trim()
     )
